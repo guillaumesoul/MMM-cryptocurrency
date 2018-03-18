@@ -357,7 +357,8 @@ Module.register('MMM-cryptocurrency', {
      */
      buildGlobalView: function(marketCapApiResult) {
 		
-		var table = document.createElement('table')        
+		var table = document.createElement('table');
+		table.className = 'css-table-global'       
         var trWrapper = document.createElement('tr');
         trWrapper.className = 'small';
         var tdWrapper = document.createElement('td')
@@ -367,7 +368,7 @@ Module.register('MMM-cryptocurrency', {
         tdWrapper.className = 'css-global-result';
         var attributeWithConversion = 'total_market_cap_' + this.config.conversion.toLowerCase();
         console.log(attributeWithConversion);
-        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult[attributeWithConversion]) + ' ' + this.config.conversion;
+        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult[attributeWithConversion]) + ' €';
         trWrapper.appendChild(tdWrapper);
         table.appendChild(trWrapper);
         
@@ -381,8 +382,7 @@ Module.register('MMM-cryptocurrency', {
         tdWrapper.className = 'css-global-result';
         var attributeWithConversion = 'total_24h_volume_' + this.config.conversion.toLowerCase();
         console.log(attributeWithConversion);
-        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult[attributeWithConversion]) + ' ' + this.config.conversion;
-        //tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult.total_24h_volume_eur) + ' €';
+        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult[attributeWithConversion]) + ' €';
         trWrapper.appendChild(tdWrapper);
         table.appendChild(trWrapper);
         
@@ -421,8 +421,8 @@ Module.register('MMM-cryptocurrency', {
         var globalTable = this.buildGlobalView(marketCapApiResult);
         wrapper.appendChild(globalTable);
        
-        var table = document.createElement('table')
-        table.className = 'x-small mmm-cryptocurrency-icon'
+        var table = document.createElement('table');
+        table.className = 'small mmm-cryptocurrency-icon css-tickers-table'
 
         for (var j = 0; j < apiResult.length; j++) {
 
@@ -459,19 +459,19 @@ Module.register('MMM-cryptocurrency', {
                 let changesWrapper = document.createElement('div')
                 var change_1h = document.createElement('change_1h')
                 change_1h.style.color = this.colorizeChange(apiResult[j].percent_change_1h)
-                change_1h.style.fontSize = 'medium'
+                change_1h.style.fontSize = 'small'
                 change_1h.innerHTML = 'h: ' + apiResult[j].percent_change_1h + '%'
                 change_1h.style.marginRight = '12px'
 
                 var change_24h = document.createElement('change_24h')
                 change_24h.style.color = this.colorizeChange(apiResult[j].percent_change_24h)
-                change_24h.style.fontSize = 'medium'
+                change_24h.style.fontSize = 'small'
                 change_24h.innerHTML = 'd: ' + apiResult[j].percent_change_24h + '%'
                 change_24h.style.marginRight = '12px'
 
                 var change_7d = document.createElement('change_7d')
                 change_7d.style.color = this.colorizeChange(apiResult[j].percent_change_7d)
-                change_7d.style.fontSize = 'medium'
+                change_7d.style.fontSize = 'small'
                 change_7d.innerHTML = 'w: ' + apiResult[j].percent_change_7d + '%'
 
                 changesWrapper.appendChild(change_1h)
