@@ -1,5 +1,6 @@
 Module.register('MMM-cryptocurrency', {
-    result: {},
+    tickers: {},
+    marketcap: {},
     defaults: {
         currency: ['bitcoin'],
         conversion: 'USD',
@@ -134,11 +135,14 @@ Module.register('MMM-cryptocurrency', {
         wax: 2300,
         zcash: 1437,
         zclassic: 1447,
-        zcoin: 1414
+        zcoin: 1414,
+        coss: 1989,
+        luxcoin: 2107,
     },
 
     start: function() {
         this.getTicker()
+        this.getMarketCap()
         this.scheduleUpdate()
     },
 
@@ -151,26 +155,36 @@ Module.register('MMM-cryptocurrency', {
         var url = 'https://api.coinmarketcap.com/v1/ticker/?convert=' + conversion + '&limit=' + this.config.limit
         this.sendSocketNotification('get_ticker', url)
     },
+    
+    getMarketCap: function() {
+        var conversion = this.config.conversion
+        var url = 'https://api.coinmarketcap.com/v1/global/?convert=' + conversion
+        this.sendSocketNotification('get_marketcap', url)
+    },
 
     scheduleUpdate: function() {
         var self = this
             // Refresh time should not be less than 5 minutes
         var delay = 300000
         setInterval(function() {
-            self.getTicker()
+            self.getTicker();
+            self.getMarketCap();
         }, delay)
     },
 
     getDom: function() {
         if (this.config.displayType == 'logo' || this.config.displayType == 'logoWithChanges') {
             this.folder = (this.config.coloredLogos ? 'colored/' : 'black-white/')
-            return this.buildIconView(this.result, this.config.displayType)
+            return this.buildIconView(this.tickers, this.marketcap, this.config.displayType)
         }
-        var data = this.result
+        var data = this.tickers
+        var marketCap = this.marketcap
 
         var wrapper = document.createElement('table')
-        wrapper.className = 'small mmm-cryptocurrency'
-
+        wrapper.className = 'small mmm-cryptocurrency'        
+        
+        
+        //tickers
         var tableHeader = document.createElement('tr')
         tableHeader.className = 'header-row'
 
@@ -221,7 +235,7 @@ Module.register('MMM-cryptocurrency', {
 
             for (var j = 0; j < tdValues.length; j++) {
                 var tdWrapper = document.createElement('td')
-                var currValue = tdValues[j]
+                let currValue = tdValues[j]
                 // If I am showing value then set color
                 if (currValue.includes('%')) {
                     tdWrapper.style.color = this.colorizeChange(currValue.slice(0,-1))
@@ -235,8 +249,12 @@ Module.register('MMM-cryptocurrency', {
     },
 
     socketNotificationReceived: function(notification, payload) {
-        if (notification === 'got_result') {
-            this.result = this.getWantedCurrencies(this.config.currency, payload)
+        if (notification === 'got_tickers') {
+            this.tickers = this.getWantedCurrencies(this.config.currency, payload)
+            this.updateDom()
+        }
+        if (notification === 'got_marketcap') {
+            this.marketcap = payload
             this.updateDom()
         }
     },
@@ -307,6 +325,76 @@ Module.register('MMM-cryptocurrency', {
         var roundedTempNumber = Math.round(tempNumber)
         return roundedTempNumber / factor
     },
+    
+    /**
+     * Format a number to the french format (space every 10^3) 
+     * 
+     * @param number
+     * @returns string
+     */
+     numberFormatFrench: function(number) {
+		 var result = '';
+		 var stringNumber = String(number);
+		 var cpt = 0;
+		 for(var i=(stringNumber.length-1); i>=0 ; i--) {
+			 if(cpt%3==0) {
+				 result = ' ' + result;
+				 cpt=0;
+			 }
+			 result = stringNumber[i] + result;
+			 cpt++;
+		 }
+		 return result;
+	 },
+	 
+	 
+	 /**
+     * Creates the icon view type
+     *
+     * @param apiResult
+     * @param displayType
+     * @returns {Element}
+     */
+     buildGlobalView: function(marketCapApiResult) {
+		
+		var table = document.createElement('table')        
+        var trWrapper = document.createElement('tr');
+        trWrapper.className = 'small';
+        var tdWrapper = document.createElement('td')
+        tdWrapper.innerHTML = 'Total marketcap';
+        trWrapper.appendChild(tdWrapper);
+        var tdWrapper = document.createElement('td');
+        tdWrapper.className = 'css-global-result';
+        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult.total_market_cap_eur) + ' €';
+        trWrapper.appendChild(tdWrapper);
+        table.appendChild(trWrapper);
+        
+        
+        var trWrapper = document.createElement('tr');
+        trWrapper.className = 'small';
+        var tdWrapper = document.createElement('td')
+        tdWrapper.innerHTML = '24h vol';
+        trWrapper.appendChild(tdWrapper);
+        var tdWrapper = document.createElement('td')
+        tdWrapper.className = 'css-global-result';
+        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult.total_24h_volume_eur) + ' €';
+        trWrapper.appendChild(tdWrapper);
+        table.appendChild(trWrapper);
+        
+        var trWrapper = document.createElement('tr');
+        trWrapper.className = 'small';
+        var tdWrapper = document.createElement('td')
+        tdWrapper.innerHTML = 'Bitcoin %';
+        trWrapper.appendChild(tdWrapper);
+        var tdWrapper = document.createElement('td')
+        tdWrapper.className = 'css-global-result';
+        tdWrapper.innerHTML = marketCapApiResult.bitcoin_percentage_of_market_cap + '%';
+        trWrapper.appendChild(tdWrapper);
+        table.appendChild(trWrapper);
+        
+        return table;
+	 },    
+    
 
     /**
      * Creates the icon view type
@@ -315,7 +403,8 @@ Module.register('MMM-cryptocurrency', {
      * @param displayType
      * @returns {Element}
      */
-    buildIconView: function(apiResult, displayType) {
+    buildIconView: function(apiResult, marketCapApiResult, displayType) {
+		
         var wrapper = document.createElement('div')
         var header = document.createElement('header')
         header.className = 'module-header'
@@ -323,9 +412,12 @@ Module.register('MMM-cryptocurrency', {
         if (this.config.logoHeaderText !== '') {
             wrapper.appendChild(header)
         }
-
+        
+        var globalTable = this.buildGlobalView(marketCapApiResult);
+        wrapper.appendChild(globalTable);
+       
         var table = document.createElement('table')
-        table.className = 'medium mmm-cryptocurrency-icon'
+        table.className = 'x-small mmm-cryptocurrency-icon'
 
         for (var j = 0; j < apiResult.length; j++) {
 
@@ -338,14 +430,14 @@ Module.register('MMM-cryptocurrency', {
             if (this.imageExists(apiResult[j].id)) {
                 var logo = new Image()
 
-                logo.src = '/MMM-cryptocurrency/' + this.folder + apiResult[j].id + '.png'
-                logo.setAttribute('width', '50px')
-                logo.setAttribute('height', '50px')
+                logo.src = '/MMM-Cryptocurrency/' + this.folder + apiResult[j].id + '.png'
+                logo.setAttribute('width', '35px')
+                logo.setAttribute('height', '35px')
                 logoWrapper.appendChild(logo)
             } else {
                 this.sendNotification('SHOW_ALERT', {
                     timer: 5000,
-                    title: 'MMM-cryptocurrency',
+                    title: 'MMM-Cryptocurrency',
                     message: '' +
                         this.translate('IMAGE') + ' ' + apiResult[j].id + '.png ' + this.translate('NOTFOUND') + ' /MMM-cryptocurrency/public/' + this.folder
                 })
@@ -359,7 +451,7 @@ Module.register('MMM-cryptocurrency', {
             priceWrapper.appendChild(price)
 
             if (displayType == 'logoWithChanges') {
-                var changesWrapper = document.createElement('div')
+                let changesWrapper = document.createElement('div')
                 var change_1h = document.createElement('change_1h')
                 change_1h.style.color = this.colorizeChange(apiResult[j].percent_change_1h)
                 change_1h.style.fontSize = 'medium'
@@ -394,7 +486,6 @@ Module.register('MMM-cryptocurrency', {
                 if (this.sparklineIds[apiResult[j].id]) {
                     var graph = document.createElement('img')
                     graph.src = 'https://s2.coinmarketcap.com/generated/sparklines/' + this.sparklineIds[apiResult[j].id] + '.png?cachePrevention=' + Math.random()
-                    console.log(graph.src)
                     graphWrapper.appendChild(graph)
                 }
                 tr.appendChild(graphWrapper)
@@ -415,7 +506,7 @@ Module.register('MMM-cryptocurrency', {
      * @returns {boolean}
      */
     imageExists: function(currencyName) {
-        var imgPath = '/MMM-cryptocurrency/' + this.folder + currencyName + '.png'
+        var imgPath = '/MMM-Cryptocurrency/' + this.folder + currencyName + '.png'
         var http = new XMLHttpRequest()
         http.open('HEAD', imgPath, false)
         http.send()

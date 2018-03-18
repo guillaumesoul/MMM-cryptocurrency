@@ -7,7 +7,7 @@
 }
 
 .mmm-cryptocurrency > tr > td, .mmm-cryptocurrency > tr > th {
-    padding-left: 32px;
+    padding-left: 15px;
     padding-bottom: 5px;
 }
 
@@ -15,22 +15,29 @@
     vertical-align: middle;
 }
 .mmm-cryptocurrency-icon > tr > td {
-    padding-bottom: 10px;
+    padding-bottom: 5px;
     text-align: right;
 }
 .mmm-cryptocurrency tr.header-row th {
     border-bottom: 1px solid #666;
     padding-bottom: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 .mmm-cryptocurrency *:first-child {
     padding-left: 0;
 }
 .mmm-cryptocurrency-icon .icon-field {
-    padding-right: 10px;
+    padding-right: 5px;
 }
 
 .mmm-cryptocurrency-icon > tr > td.graph > img {
-    padding-left: 10px;
+    padding-left: 5px;
     filter: invert(1) grayscale(100%) brightness(500%);
 }
+
+
+.css-global-result{
+	padding-left: 10px;
+	text-align: right;
+}
+
