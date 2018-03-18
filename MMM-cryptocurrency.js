@@ -506,7 +506,7 @@ Module.register('MMM-cryptocurrency', {
      * @returns {boolean}
      */
     imageExists: function(currencyName) {
-        var imgPath = '/MMM-Cryptocurrency/' + this.folder + currencyName + '.png'
+        var imgPath = '/MMM-cryptocurrency/' + this.folder + currencyName + '.png'
         var http = new XMLHttpRequest()
         http.open('HEAD', imgPath, false)
         http.send()
