@@ -365,7 +365,9 @@ Module.register('MMM-cryptocurrency', {
         trWrapper.appendChild(tdWrapper);
         var tdWrapper = document.createElement('td');
         tdWrapper.className = 'css-global-result';
-        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult.total_market_cap_eur) + ' €';
+        var attributeWithConversion = 'total_market_cap_' + this.config.conversion.toLowerCase();
+        console.log(attributeWithConversion);
+        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult[attributeWithConversion]) + ' ' + this.config.conversion;
         trWrapper.appendChild(tdWrapper);
         table.appendChild(trWrapper);
         
@@ -377,7 +379,10 @@ Module.register('MMM-cryptocurrency', {
         trWrapper.appendChild(tdWrapper);
         var tdWrapper = document.createElement('td')
         tdWrapper.className = 'css-global-result';
-        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult.total_24h_volume_eur) + ' €';
+        var attributeWithConversion = 'total_24h_volume_' + this.config.conversion.toLowerCase();
+        console.log(attributeWithConversion);
+        tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult[attributeWithConversion]) + ' ' + this.config.conversion;
+        //tdWrapper.innerHTML = this.numberFormatFrench(marketCapApiResult.total_24h_volume_eur) + ' €';
         trWrapper.appendChild(tdWrapper);
         table.appendChild(trWrapper);
         
